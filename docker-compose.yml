@@ -1,0 +1,57 @@
+services:
+
+  ### Database ###
+  wp_db:
+    container_name: wp_db
+    image: mariadb:latest
+    volumes:
+      - ./mysql:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: wordpress
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+    networks:
+    - wp_network
+
+  ### WORDPRESS ###
+  wp:
+    container_name: wp
+    image: wordpress:latest
+    depends_on:
+      - wp_db
+    volumes:
+      - ./wordpress:/var/www/html
+      - ./wordpress/plugins:/var/www/html/wp-content/plugins
+      - ./wordpress/themes:/var/www/html/wp-content/themes
+      - ./wordpress/uploads:/var/www/html/wp-content/uploads
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: wp_db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+    networks:
+    - wp_network
+
+  ### PHPMYADMIN ###
+  phpmyadmin:
+    container_name: phpmyadmin
+    image: phpmyadmin:latest
+    depends_on:
+      - wp_db
+    restart: always
+    ports:
+      - 8081:80
+    environment:
+      PMA_HOST: wp_db
+      MYSQL_ROOT_PASSWORD: wordpress
+    networks:
+    - wp_network
+
+networks:
+  wp_network:
+    driver: bridge
