@@ -29,6 +29,7 @@ services:
     restart: always
     ports:
       - "8080:80"
+      - "5173:5173"
     environment:
       WORDPRESS_DB_HOST: wp_db:3306
       WORDPRESS_DB_USER: wordpress
