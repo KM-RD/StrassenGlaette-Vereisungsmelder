@@ -4,28 +4,25 @@ import { Col, Row } from 'antd';
 import './App.css';
 
 function App() {
-  const [data, setData] = React.useState([
-    { time: "12:00", temperature: 20.1, soil_moisture: 61.7 },
-    { time: "12:01", temperature: 19.3, soil_moisture: 65.1 },
-    { time: "12:02", temperature: 19.7, soil_moisture: 58.9 },
-    { time: "12:03", temperature: 20.8, soil_moisture: 63.4 },
-    { time: "12:04", temperature: 21.2, soil_moisture: 60.2 },
-    { time: "12:05", temperature: 19.4, soil_moisture: 62.8 },
-    { time: "12:06", temperature: 17.5, soil_moisture: 57.1 },
-    { time: "12:07", temperature: 18.9, soil_moisture: 61.5 },
-    { time: "12:08", temperature: 19.7, soil_moisture: 59.3 },
-    { time: "12:09", temperature: 21.1, soil_moisture: 62.0 },
-    { time: "12:10", temperature: 22.0, soil_moisture: 58.6 },
-    { time: "12:11", temperature: 21.9, soil_moisture: 64.2 },
-    { time: "12:12", temperature: 21.5, soil_moisture: 60.7 },
-    { time: "12:13", temperature: 21.0, soil_moisture: 63.8 },
-    { time: "12:14", temperature: 20.8, soil_moisture: 59.9 }
-  ]);
-
-
+  // Function to generate random change within a specified range
   const randomChange = (min, max) => {
     return parseFloat((Math.random() * (max - min) + min).toFixed(1));
   };
+
+  // Generate initial dataset with the current time and previous entries
+  const currentTime = new Date();
+  const initialData = Array.from({ length: 15 }, (_, index) => {
+    const pastTime = new Date(currentTime);
+    pastTime.setMinutes(currentTime.getMinutes() - (14 - index)); // Decrease minutes for past entries
+
+    return {
+      time: pastTime.toTimeString().slice(0, 5), // Format to "HH:MM"
+      temperature: randomChange(17, 22), // Example range for temperature
+      soil_moisture: randomChange(50, 65), // Example range for soil moisture
+    };
+  });
+
+  const [data, setData] = React.useState(initialData);
 
   const updateTime = (lastTime) => {
     const [hours, minutes] = lastTime.split(':').map(Number);
@@ -37,7 +34,6 @@ function App() {
       newHours += 1;
     }
 
-
     return `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
   };
 
@@ -48,7 +44,7 @@ function App() {
         const newTime = updateTime(lastEntry.time);
 
         // Update temperature with bounds
-        const newTemperature = Math.max(-10, Math.min(20, lastEntry.temperature + randomChange(-2, 2)));
+        const newTemperature = Math.max(-10, Math.min(30, lastEntry.temperature + randomChange(-2, 2)));
 
         // Ensure soil moisture stays within 0 and 100%
         const newSoilMoisture = Math.max(0, Math.min(100, lastEntry.soil_moisture + randomChange(-7, 7)));
@@ -61,16 +57,14 @@ function App() {
 
         const updatedData = [...prevData, newDataPoint];
         if (updatedData.length > 15) {
-          updatedData.shift();
+          updatedData.shift(); // Maintain a maximum of 15 entries
         }
 
         return updatedData;
       });
+    }, 60000); // Update every minute
 
-    }, 60000)
-
-
-    return () => clearInterval(intervalId);
+    return () => clearInterval(intervalId); // Cleanup on unmount
   }, []);
 
   return (
@@ -104,7 +98,6 @@ function App() {
               margin={{ top: 70, bottom: 70, left: 70, right: 70 }}
               rightAxis="rightAxisId"
             />
-
           </Col>
         </Row>
         <Row>
@@ -126,7 +119,7 @@ function App() {
               xAxis={[{ scaleType: 'band', dataKey: 'time' }]}
               yAxis={[{ min: 0, max: 100 }]}
               series={[
-                { dataKey: 'soil_moisture', label: 'Ground Moisture (%)', color: "#00b2e3" },
+                { dataKey: 'soil_moisture', label: 'Ground Moisture (%)', color: "#00BFFF" },
               ]}
               height={290}
               margin={{ top: 60, bottom: 30, left: 40, right: 60 }}
