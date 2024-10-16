@@ -18,11 +18,13 @@ function App() {
     return {
       time: pastTime.toTimeString().slice(0, 5), // Format to "HH:MM"
       temperature: randomChange(17, 22), // Example range for temperature
-      soil_moisture: randomChange(50, 65), // Example range for soil moisture
+      //  soil_moisture: randomChange(50, 65), // Example range for soil moisture
+      water_level: 0, // Start with water level at 0
     };
   });
 
   const [data, setData] = React.useState(initialData);
+  const [water, setWater] = React.useState(false);
 
   const updateTime = (lastTime) => {
     const [hours, minutes] = lastTime.split(':').map(Number);
@@ -44,15 +46,20 @@ function App() {
         const newTime = updateTime(lastEntry.time);
 
         // Update temperature with bounds
-        const newTemperature = Math.max(-10, Math.min(30, lastEntry.temperature + randomChange(-2, 2)));
+        const newTemperature = Math.max(18, Math.min(22, lastEntry.temperature + randomChange(-2, 2)));
+
 
         // Ensure soil moisture stays within 0 and 100%
-        const newSoilMoisture = Math.max(0, Math.min(100, lastEntry.soil_moisture + randomChange(-7, 7)));
+        //  const newSoilMoisture = Math.max(32, Math.min(59, lastEntry.soil_moisture + randomChange(-7, 7)));
+
+        // Update water level
+        const newWater = water ? randomChange(10, 30) : 0; // Randomize between 10 and 30 if water is true, else set to 0
 
         const newDataPoint = {
           time: newTime,
           temperature: newTemperature,
-          soil_moisture: newSoilMoisture,
+          //  soil_moisture: newSoilMoisture,
+          water_level: newWater,
         };
 
         const updatedData = [...prevData, newDataPoint];
@@ -65,11 +72,11 @@ function App() {
     }, 60000); // Update every minute
 
     return () => clearInterval(intervalId); // Cleanup on unmount
-  }, []);
+  }, [water]); // Add water as a dependency so it updates correctly
 
   return (
     <>
-      <div>
+      <div onClick={() => { setWater((prev) => !prev); console.log(water, 'hit') }}> {/* Toggle water state on click */}
         <Row justify="center">
           <Col span={24}>
             <LineChart
@@ -81,13 +88,15 @@ function App() {
                   dataKey: 'temperature',
                   label: 'Temperature (°C)',
                   yAxisId: 'leftAxisId',
-                  color: '#FFA500'
+                  color: '#FFA500',
+                  curve: 'natural'
                 },
                 {
-                  dataKey: 'soil_moisture',
-                  label: 'Ground Moisture (%)',
+                  dataKey: 'water_level',
+                  label: 'Water Level (%)',
                   yAxisId: 'rightAxisId',
-                  color: '#00BFFF'
+                  color: '#051fe6',
+                  curve: 'natural'
                 }
               ]}
               xAxis={[{ scaleType: 'band', dataKey: 'time' }]}
@@ -119,7 +128,7 @@ function App() {
               xAxis={[{ scaleType: 'band', dataKey: 'time' }]}
               yAxis={[{ min: 0, max: 100 }]}
               series={[
-                { dataKey: 'soil_moisture', label: 'Ground Moisture (%)', color: "#00BFFF" },
+                { dataKey: 'water_level', label: 'Water Level (%)', color: '#051fe6' },
               ]}
               height={290}
               margin={{ top: 60, bottom: 30, left: 40, right: 60 }}
@@ -132,3 +141,4 @@ function App() {
 }
 
 export default App;
+
